@@ -3,24 +3,35 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "create": "npx tsx bin/create.ts",
+    "info": "npx tsx bin/info.ts",
+    "list": "npx tsx bin/list.ts",
+    "delete": "npx tsx bin/delete.ts",
+    "claim": "npx tsx bin/claim.ts",
+    "discord": "npx tsx discord/discord-bot.ts",
+    "watch-discord": "nodemon --watch discord --watch src --ext ts --exec npm run discord",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "discord.js": "^14.15.3",
+    "next": "14.2.4",
+    "nodemon": "^3.1.4",
+    "prompts": "^2.4.2",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "14.2.4"
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
+    "@types/prompts": "^2.4.9",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.4",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.4"
+    "typescript": "^5"
   }
 }
