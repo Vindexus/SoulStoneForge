@@ -1,4 +1,7 @@
 import SoulStone from "@/soulstones/stone.class";
+import formatDate from "@/lib/helpers";
+import {getStoneScreenshotPath, takeScreenshotAndSaveToDisk} from "@/lib/screenshotter";
+import {AttachmentBuilder, ChatInputCommandInteraction} from "discord.js";
 
 type Opts = {
 	showCreated?: boolean
@@ -12,15 +15,7 @@ export function getSoulStoneLines (ss: SoulStone, opts: Opts = {}) {
 	lines.push(title)
 
 	if (opts.showCreated) {
-		lines.push(`Created: ${new Date(ss.createdAt).toLocaleTimeString('en-CA', {
-			timeZone: 'America/Vancouver', 
-			hour12: false, 
-			hour: '2-digit',
-			minute: '2-digit',
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-		})}`)
+		lines.push(`Created: ${formatDate(ss.createdAt)}`)
 	}
 
 	if (ss.player) {
@@ -35,4 +30,15 @@ export function getSoulStoneLines (ss: SoulStone, opts: Opts = {}) {
 		lines.push(`${mod.description}`)
 	})
 	return lines
+}
+
+export async function replyWithStone (interaction: ChatInputCommandInteraction, ss: SoulStone, opts  : {prepend?: string}= {}){
+	await interaction.reply('Generating...');
+	await takeScreenshotAndSaveToDisk(ss)
+	const ssPath = getStoneScreenshotPath(ss)
+	const attachment = new AttachmentBuilder(ssPath)
+	await interaction.editReply({
+		content: (opts.prepend || '') + "ID: `" + ss.id + "`",
+		files: [attachment]
+	})
 }

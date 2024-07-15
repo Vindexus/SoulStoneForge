@@ -2,32 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+.stone {
+	@apply p-4;
+	width: 800px;
+	border-image: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+
+.stone h3 {
+	margin-top: 0;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+.stone .mod h4 {
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.rarity-common {
+	color: #A0A0A0;
+}
+
+.rarity-rare {
+	color: #1E90FF;
+}
+
+.rarity-epic {
+	color: #f800f8;
+}
+
+.rarity-legendary {
+	background: linear-gradient(-45deg, #B8860B 0%, #DAA520 25%, #9d8600 50%, #DAA520 75%, #B8860B 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	text-fill-color: transparent;
+}
+
+.stone .footer {
+	border-top: 1px solid #c9ad6a;
+	padding-top: 1em;
+	opacity: 0.7;
 }

@@ -3,7 +3,9 @@ import fs from 'fs'
 import path from 'path'
 import SoulStone from "@/soulstones/stone.class";
 import {StoneStored} from "@/soulstones/types";
+import {fileURLToPath} from "node:url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const stonesDir = path.join(__dirname, '../../stones')
 
 export function getRegisteredSoulStones (): StoneStored[] {

@@ -92,11 +92,12 @@ for (const [rarity, defs] of Object.entries(textFileModDefs)) {
 	for (const file of files) {
 		if (file.endsWith('.ts')) continue
 		const contents = fs.readFileSync(path.join(dir, file), 'utf-8')
-		const lines = contents.split('\n')
-		const title = lines.pop()!
+		const id = file.replace('.txt', '')
+		const lines = contents.split('\n').filter(x => !!x)
+		const title = lines.shift()!
 		defs.push({
 			title,
-			id: file,
+			id,
 			description: lines.join('\n'),
 		})
 	}

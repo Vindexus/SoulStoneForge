@@ -1,6 +1,7 @@
-import {ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
+import {AttachmentBuilder, ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
 import {saveSoulStoneJSON} from "@/soulstones/stone-storage";
-import {getSoulStoneLines} from "../discord-helpers";
+import {getStoneScreenshotPath, takeScreenshotAndSaveToDisk} from "@/lib/screenshotter";
+import {replyWithStone} from "../discord-helpers";
 
 export const data = new SlashCommandBuilder()
 .setName('create')
@@ -17,9 +18,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 	console.log('input', rolls)
 	try {
 		const ss = await forge.newSoulStoneFromInput(rolls)
-		const lines = getSoulStoneLines(ss)
-		await interaction.reply(lines.join('\n'))
 		saveSoulStoneJSON(ss)
+		await replyWithStone(interaction, ss, {
+			prepend: 'Rolls: ' + rolls + '\n\n'
+		})
 	}
 	catch (ex) {
 		await interaction.reply(`ERROR: ${ex}`)

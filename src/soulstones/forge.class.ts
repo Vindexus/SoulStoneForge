@@ -1,4 +1,11 @@
-import {getRandomItem, modsToStoneName, rarityListToCounts, slugify, sortModsRarest} from "./helpers";
+import {
+	getRandomItem,
+	modsToStoneName,
+	rarityListToCounts,
+	rarityToCommonality,
+	slugify,
+	sortModsRarest
+} from "./helpers";
 import SoulStone from "@/soulstones/stone.class";
 import {getNumbersFromTextInput} from "../../bin/helpers";
 import forge from "@/soulstones/forge";
@@ -107,30 +114,37 @@ export class SoulStoneForge {
 		const sortedMods = sortModsRarest(mods)
 
 		const name = modsToStoneName(sortedMods)
-		return new SoulStone({
-			id: Date.now() + '-'+ slugify(name),
+		const stone = new SoulStone({
+			id: Date.now().toString(),
+			slug: slugify(name), // slugify(name
 			name,
 			player: null,
 			mods: sortedMods,
 			createdAt: new Date(),
 		})
+		this.stones.push(stone)
+		return stone
 	}
 
 	registerStone (stone: StoneStored) {
+		const mods = stone.modIds.map(id => {
+			const mod = this.getModById(id)
+			if (!mod) {
+				throw new Error(`Mod with id "${id}" not found`)
+			}
+			return mod
+		}).sort((a, b) => {
+			return rarityToCommonality(b.rarity) - rarityToCommonality(a.rarity)
+		})
 		this.stones.push(new SoulStone({
 			...stone,
 			createdAt: new Date(stone.createdAt),
-			mods: stone.modIds.map(id => {
-				const mod = this.getModById(id)
-				if (!mod) {
-					throw new Error(`Mod with id "${id}" not found`)
-				}
-				return mod
-			})
+			mods: mods
 		}))
 	}
 
 	registerStones (stones: StoneStored[]) {
+		this.stones = []
 		stones.forEach(stone => this.registerStone(stone))
 	}
 
@@ -140,6 +154,14 @@ export class SoulStoneForge {
 			throw new Error('Stone not found')
 		}
 		this.stones.splice(index, 1)
+	}
+
+	getStoneById (id: string) {
+		const matching = this.stones.filter(x => x.id.toLowerCase().indexOf(id.toLowerCase()) === 0)
+		if (matching.length > 1) {
+			throw new Error('Multiple stones found')
+		}
+		return matching[0]
 	}
 
 	getStonesBySearch (input: string) {

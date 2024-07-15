@@ -9,6 +9,8 @@
     "delete": "npx tsx bin/delete.ts",
     "claim": "npx tsx bin/claim.ts",
     "discord": "npx tsx discord/discord-bot.ts",
+    "discord-register": "npx tsx discord/discord-register.ts",
+    "screenshot": "npx tsx bin/screenshot.ts",
     "watch-discord": "nodemon --watch discord --watch src --ext ts --exec npm run discord",
     "dev": "next dev",
     "build": "next build",
@@ -20,6 +22,7 @@
     "next": "14.2.4",
     "nodemon": "^3.1.4",
     "prompts": "^2.4.2",
+    "puppeteer": "^22.13.0",
     "react": "^18",
     "react-dom": "^18"
   },
