@@ -118,7 +118,7 @@ export class SoulStoneForge {
 			id: Date.now().toString(),
 			slug: slugify(name), // slugify(name
 			name,
-			player: null,
+			playerId: null,
 			mods: sortedMods,
 			createdAt: new Date(),
 		})

@@ -1,5 +1,6 @@
 import {ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
 import {getSoulStoneLines} from "../discord-helpers";
+import formatDate from "@/lib/helpers";
 
 export const data = new SlashCommandBuilder()
 .setName('list')
@@ -11,22 +12,25 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
 	try {
 		let lines : string[] = []
+		if (forge.stones.length === 0) {
+			await interaction.reply('No registered stones.')
+			return
+		}
+
 		const sorted = forge.stones.sort((a, b) => {
 			return a.createdAt < b.createdAt ? -1 : 1
 		})
-		lines.push('**==============================**')
-		let num = 0
 		for (const ss of sorted) {
-			num++
-			if (lines.length > 0) {
-				lines.push(' ')
-				lines.push('**==============================**')
+			const parts = ['- ' + ss.name]
+			if (ss.player) {
+				parts.push(` **(${ss.player.characterName})**`)
 			}
-			lines = lines.concat(getSoulStoneLines(ss, {
-				showCreated: true,
-			}))
+			parts.push( '`#' + ss.id + '`')
+			parts.push(' - Created ' + formatDate(ss.createdAt))
+
+			lines.push(parts.join(' '))
 		}
-		lines.push('**==============================**')
+		console.log('lines', lines)
 		await interaction.reply(lines.join('\n'))
 	}
 	catch (ex) {

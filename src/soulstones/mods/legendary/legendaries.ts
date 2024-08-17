@@ -1,4 +1,4 @@
-import {ModDef} from "@/soulstones/forge.class";
+import {ModDef} from "@/soulstones/types";
 
 const defs : ModDef[] = [
 	{

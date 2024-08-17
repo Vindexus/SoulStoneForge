@@ -4,7 +4,7 @@
 
 .stone {
 	@apply p-4;
-	width: 800px;
+	max-width: 600px;
 	border-image: none;
 }
 

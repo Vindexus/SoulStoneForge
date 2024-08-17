@@ -33,8 +33,8 @@ export default async function Page({
 			</div>
 		})}
 		<div className={'text-sm footer'}>
-			{stone.player && <div className={'text-lg'}>In <strong>{stone.player}</strong>'s Inventory</div>}
-			<div className={'italic'}>ID: <span className={'font-mono'}>{stone.id.split('-')[0]}</span> // Created {formatDate(stone.createdAt)}</div>
+			{stone.player && <div className={'text-lg'}>In <strong>{stone.player.characterName}</strong>'s Inventory</div>}
+			<div className={'italic'}>ID: <span className={'font-mono'}>{stone.id.split('-')[0]}</span> \\ Created {formatDate(stone.createdAt)}</div>
 		</div>
 
 	</div>

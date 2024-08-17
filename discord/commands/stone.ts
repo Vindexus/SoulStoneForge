@@ -21,9 +21,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 		const id = parseInt(search)
 		if (isNaN(id)) {
 			const found = await forge.getStonesBySearch(search)
-			if (found.length === 0) {
-				throw new Error(`No stones found for "${search}"`)
-			}
 			if (found.length > 1) {
 				throw new Error(`Multiple stones found for "${search}"`)
 			}
@@ -32,7 +29,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 		else {
 			ss = forge.getStoneById(search)
 		}
-		await replyWithStone(interaction, ss)
+		if (!ss) {
+			await interaction.reply(`Could not find stone with search "${search}"`)
+			return
+		}
+		await replyWithStone(interaction, ss, {
+			ephemeral: false,
+		})
 	}
 	catch (ex) {
 		await interaction.reply(`ERROR: ${ex}`)

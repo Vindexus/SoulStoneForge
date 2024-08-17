@@ -50,7 +50,7 @@ export function logStone (stone: SoulStone) {
 	}
 	indented(gray('ID: ' + stone.id))
 	indented(gray('Created: ' + stone.createdAt.toLocaleTimeString('en-CA', {year: 'numeric', month: 'long', day: 'numeric'})))
-	indented(gray('Player: ') + (stone.player ? bold(stone.player) : gray('None')))
+	indented(gray('Player: ') + (stone.playerId ? bold(stone.playerId) : gray('None')))
 	for (const mod of stone.mods) {
 		indented(clrRarity(mod.rarity, '----'))
 		indented(clrRarity(mod.rarity, `${mod.title} (${mod.rarity})`))

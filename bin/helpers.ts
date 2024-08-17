@@ -3,7 +3,7 @@ import forge from "@/soulstones/forge";
 import {logStone} from "./prints";
 import SoulStone from "@/soulstones/stone.class";
 import prompts from "prompts";
-import {PLAYERS} from "@/soulstones/players";
+import {PlayerId, PLAYERS} from "@/soulstones/players";
 
 export function exit (err?: string) {
 	if (err) {
@@ -25,7 +25,7 @@ export const promptOpts = {
 	}
 }
 
-export async function promptPlayerName () : Promise<string | undefined> {
+export async function promptPlayerId () : Promise<PlayerId | undefined> {
 	const response = await prompts({
 		type: 'select',
 		name: 'value',
@@ -35,9 +35,9 @@ export async function promptPlayerName () : Promise<string | undefined> {
 				value: null,
 				title: '[none]'
 			},
-			...PLAYERS.map(name => ({
-				title: name,
-				value: name,
+			...PLAYERS.map(p => ({
+				title: p.characterName,
+				value: p.id,
 			}))
 		]
 	})

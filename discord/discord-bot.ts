@@ -27,9 +27,11 @@ client.on(Events.InteractionCreate, async interaction => {
 		return;
 	}
 
+	console.log(`Chat command: ${interaction.commandName} by ${interaction.user.tag}`)
+
 	try {
 		// @ts-ignore
-		await command.execute(interaction);
+		await command.execute(interaction, client);
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {
