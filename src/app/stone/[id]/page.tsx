@@ -11,7 +11,6 @@ export default async function Page({
 	const forge = f.default
 
 	const registered = getRegisteredSoulStones()
-	console.log('registered', registered.length)
 	forge.registerStones(registered)
 
 	const stone = forge.getStoneById(id);

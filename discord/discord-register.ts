@@ -1,5 +1,5 @@
 import { REST, Routes } from 'discord.js';
-import { clientId, guildId, token } from './config.json'
+import { clientId, guildId, token } from './discord-config'
 import commands from './commands/commands'
 
 const infos = []

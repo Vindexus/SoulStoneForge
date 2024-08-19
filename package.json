@@ -15,8 +15,9 @@
     "watch-discord": "nodemon --watch discord --watch src --ext ts --exec npm run discord",
     "dev": "dotenv -c -- next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "server": "next start",
+    "lint": "next lint",
+    "start": "concurrently \"npm:dev\" \"npm:watch-discord\""
   },
   "dependencies": {
     "discord.js": "^14.15.3",

@@ -41,4 +41,12 @@ export default class SoulStone implements SoulStoneFields {
 	updateIdSuffix (suffix: string) {
 		this.id = this.id.split('-')[0] + '-' + slugify(suffix)
 	}
+
+	setName (newName: string) {
+		const name = (newName || '').trim()
+		if (!name) {
+			throw new Error('Name cannot be blank')
+		}
+		this.name = newName
+	}
 }

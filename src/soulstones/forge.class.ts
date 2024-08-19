@@ -164,6 +164,17 @@ export class SoulStoneForge {
 		return matching[0]
 	}
 
+	getStoneBySearch (input: string) : SoulStone {
+		const found = this.getStonesBySearch(input)
+		if (found.length > 1) {
+			throw new Error(`Found too many stones from search "${input}". Found ${found.map(x => x.id)}`)
+		}
+		if (found.length === 0) {
+			throw new Error(`Found no stones from search "${input}"`)
+		}
+		return found[0]
+	}
+
 	getStonesBySearch (input: string) {
 		const search = input.toLowerCase().trim()
 		return this.stones.filter(x => x.name.toLowerCase().includes(search) || x.id.includes(search))

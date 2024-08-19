@@ -1,13 +1,12 @@
 import {getStoneFromArgv, promptPlayerId} from "./helpers";
 import {logStone} from "./prints";
-import {saveSoulStoneJSON} from "@/soulstones/stone-storage";
+import {setStonePlayer} from "@/soulstones/controller";
 
 ;(async function () {
 	const stone = getStoneFromArgv()
 	const beforeName = stone.playerId
 	logStone(stone)
 	const player = await promptPlayerId()
-	stone.setPlayer(player)
-	saveSoulStoneJSON(stone)
+	setStonePlayer(stone, player)
 	console.log(`Changed the player from ${beforeName ?? 'no one'} to: ${player ?? 'none'}`)
 })();

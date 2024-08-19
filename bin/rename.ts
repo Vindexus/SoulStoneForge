@@ -1,7 +1,7 @@
-import {getStoneFromArgv, promptPlayerId} from "./helpers";
+import {getStoneFromArgv} from "./helpers";
 import {logStone} from "./prints";
-import {saveSoulStoneJSON} from "@/soulstones/stone-storage";
 import prompts from "prompts";
+import {renameStone} from "@/soulstones/controller";
 
 
 ;(async function () {
@@ -16,7 +16,6 @@ import prompts from "prompts";
 		console.log('Cancelled')
 		return
 	}
-	stone.name = response.value
-	saveSoulStoneJSON(stone)
+	renameStone(stone, response.value)
 	console.log(`Changed the name to: ${stone.name}`)
 })();

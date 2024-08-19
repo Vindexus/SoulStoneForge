@@ -1,8 +1,21 @@
 import SoulStone from "@/soulstones/stone.class";
 import formatDate from "@/lib/helpers";
 import {getStoneScreenshotPath, takeScreenshotAndSaveToDisk} from "@/lib/screenshotter";
-import {AttachmentBuilder, ChatInputCommandInteraction} from "discord.js";
+import {AttachmentBuilder, ChatInputCommandInteraction, SlashCommandStringOption} from "discord.js";
 import fs from "fs";
+import {SoulStoneForge} from "@/soulstones/forge.class";
+
+export function addCommandOptionSearchStone (option: SlashCommandStringOption) {
+	return option.setName('stone')
+		.setDescription('ID or search for stone')
+		.setRequired(true)
+}
+
+export async function getInteractionStone (interaction: ChatInputCommandInteraction, forge: SoulStoneForge) : Promise<SoulStone> {
+	const stoneSearch = interaction.options.getString('stone', true);
+	const ss = forge.getStoneBySearch(stoneSearch)
+	return ss
+}
 
 type Opts = {
 	showCreated?: boolean
@@ -75,7 +88,7 @@ export async function getSSAttachment (ss: SoulStone) {
 		console.log('SS found, its age is ', ageS, 'seconds')
 
 		// If the file is older than some seconds we recreate it
-		if (ageS > 30) {
+		if (ageS > 3) {
 			console.log('Too old, recreate it please')
 			await takeScreenshotAndSaveToDisk(ss)
 		}

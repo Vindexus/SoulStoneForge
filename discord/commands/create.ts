@@ -1,16 +1,15 @@
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonStyle,
 	ChatInputCommandInteraction,
 	Client,
-	Events, Interaction,
+	Events,
+	Interaction,
 	SlashCommandBuilder,
-	ButtonStyle,
 } from "discord.js";
 import {removeSoulStoneJSON, saveSoulStoneJSON} from "@/soulstones/stone-storage";
 import {getSSMessage, replyWithStone} from "../discord-helpers";
-import {getPlayerByDiscordId} from "@/soulstones/players";
-import forge from "@/soulstones/forge";
 
 export const data = new SlashCommandBuilder()
 .setName('create')
@@ -34,12 +33,6 @@ export const data = new SlashCommandBuilder()
 		}
 
 */
-
-		console.log('interaction.channel', interaction.channel)
-		console.log('channel id', interaction.channelId)
-		const channel = await client.channels.fetch(interaction.channelId)
-		console.log('fetched channel, channel', channel)
-
 		saveSoulStoneJSON(ss)
 
 		const id = ss.id
@@ -57,7 +50,7 @@ export const data = new SlashCommandBuilder()
 
 		const row = new ActionRowBuilder().addComponents(confirmButton, cancelButton)
 
-		async function onConfirmButton(btnI: Interaction) {
+		async function onButton (btnI: Interaction) {
 			if (!btnI.isButton()) {
 				return
 			}
@@ -83,11 +76,15 @@ export const data = new SlashCommandBuilder()
 					files: [],
 				})
 			}
+			else {
+				// Return here so we don't turn off interactions before one of them is chosen
+				return
+			}
 
-			client.off(Events.InteractionCreate, onConfirmButton)
+			client.off(Events.InteractionCreate, onButton)
 		}
 
-		client.on(Events.InteractionCreate, onConfirmButton)
+		client.on(Events.InteractionCreate, onButton)
 		await replyWithStone(interaction, ss, {
 			prepend,
 			components: row,
