@@ -44,3 +44,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
 // Log in to Discord with your client's token
 client.login(token);
+
+process.on('SIGINT', function() {
+	console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+	// some other closing procedures go here
+	process.exit(0);
+});

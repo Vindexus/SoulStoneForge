@@ -16,9 +16,11 @@ export function getRegisteredSoulStones (): StoneStored[] {
 	})
 }
 
-
 export function removeSoulStoneJSON (id: string) {
 	const stoneFile = path.join(stonesDir, id + '.json')
+	const json = fs.readFileSync(stoneFile, 'utf-8')
+	const archiveFile = path.join(stonesDir, '..', 'archive', id + '-del_' + Date.now() + '.json')
+	fs.writeFileSync(archiveFile, json)
 	fs.unlinkSync(stoneFile)
 	console.log(`Removed ${stoneFile}`)
 }

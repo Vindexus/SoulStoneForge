@@ -9,7 +9,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import {removeSoulStoneJSON, saveSoulStoneJSON} from "@/soulstones/stone-storage";
-import {getSSMessage, replyWithStone} from "../discord-helpers";
+import {getSSMessage, replyWithStone, verifyAdminRole} from "../discord-helpers";
 
 export const data = new SlashCommandBuilder()
 .setName('create')
@@ -19,7 +19,11 @@ export const data = new SlashCommandBuilder()
 			.setDescription('Results of d12 and d100 rolls. Example: 12 34 11 89')
 			.setRequired(true))
 
-	export async function execute(interaction: ChatInputCommandInteraction, client: Client) {
+export async function execute(interaction: ChatInputCommandInteraction, client: Client) {
+	if (!await verifyAdminRole(interaction)) {
+		return
+	}
+
 	const imp = await import('@/soulstones/forge');
 	const forge = imp.default
 	const rolls = interaction.options.getString('rolls', true);
@@ -38,17 +42,22 @@ export const data = new SlashCommandBuilder()
 		const id = ss.id
 		const confirmButton = new ButtonBuilder()
 			.setCustomId('confirm_' + id)
-			.setLabel('Confirm')
+			.setLabel('Share')
 			.setStyle(ButtonStyle.Primary)
+
+		const refreshButton = new ButtonBuilder()
+		.setCustomId('refresh_' + id)
+		.setLabel('Refresh Image')
+		.setStyle(ButtonStyle.Secondary)
 
 		const cancelButton = new ButtonBuilder()
 			.setCustomId('cancel_' + id)
-			.setLabel('Cancel')
-			.setStyle(ButtonStyle.Secondary)
+			.setLabel('Delete')
+			.setStyle(ButtonStyle.Danger)
 
-		const prepend = 'Rolls: ' + rolls + '\n\n'
+		const prepend = 'Created a Stone from this input: ' + rolls + '\n\n'
 
-		const row = new ActionRowBuilder().addComponents(confirmButton, cancelButton)
+		const row = new ActionRowBuilder().addComponents(confirmButton, refreshButton, cancelButton)
 
 		async function onButton (btnI: Interaction) {
 			if (!btnI.isButton()) {
@@ -66,6 +75,16 @@ export const data = new SlashCommandBuilder()
 				})
 				console.log('Sending content to channel', content)
 				await btnI.channel!.send(content)
+			}
+			else if (btnI.customId === 'refresh_' + id) {
+				const updated = await getSSMessage(ss, {
+					ephemeral: true,
+					components: row,
+				})
+				await btnI.update({ content: 'Refresh', components: [] });
+				await interaction.editReply(updated)
+				// Return so we don't turn off the listener
+				return
 			}
 			else if (btnI.customId === 'cancel_' + id) {
 				forge.removeStone(ss.id)

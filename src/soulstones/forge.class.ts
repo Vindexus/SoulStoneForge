@@ -1,5 +1,5 @@
 import {
-	getRandomItem,
+	getRandomItem, getRandomItemSeeded, getRandomStoneNoun, getRandomStonePrefix,
 	modsToStoneName,
 	rarityListToCounts,
 	rarityToCommonality,
@@ -69,14 +69,9 @@ export class SoulStoneForge {
 			throw new Error('Not enough d100 rolls provided for the number of mods')
 		}
 		const d100s = nums.slice(1, 1+numMods)
-		console.log('nums', nums)
-		console.log('numMods', numMods)
-		console.log('d100s', d100s)
 		const rarityList = d100s.map(forge.getRarityFromRoll)
-		console.log('list', rarityList)
 		const rarityCounts = rarityListToCounts(rarityList)
-		console.log('rarityCounts', rarityCounts)
-		return this.newSoulStone(rarityCounts)
+		return this.newSoulStone(rarityCounts, input)
 	}
 
 	/**
@@ -85,7 +80,7 @@ export class SoulStoneForge {
 	 * Doesn't register the new stone
 	 * @param modCats
 	 */
-	newSoulStone (modCats: RarityCounts) : SoulStone {
+	newSoulStone (modCats: RarityCounts, seed: string) : SoulStone {
 		const mods : Mod[] = []
 
 		// Duplicate it from the getter function because we'll add to it
@@ -100,7 +95,7 @@ export class SoulStoneForge {
 					throw new Error(`No mods of rarity "${rarity}" left`)
 				}
 
-				const mod = getRandomItem<Mod>(available)
+				const mod = getRandomItemSeeded<Mod>(available, seed + '_' + rarity + '_' + i)
 				usedModIds.push(mod.id)
 				mods.push(mod)
 			}
@@ -113,7 +108,7 @@ export class SoulStoneForge {
 		// Put the rarer ones first
 		const sortedMods = sortModsRarest(mods)
 
-		const name = modsToStoneName(sortedMods)
+		const name = getRandomStonePrefix() + ' ' + getRandomStoneNoun()
 		const stone = new SoulStone({
 			id: Date.now().toString(),
 			slug: slugify(name), // slugify(name

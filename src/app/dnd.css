@@ -247,6 +247,11 @@ body p {
 body p + p {
 	margin-top: -0.8em;
 }
+
+body p + ul {
+	margin-top: 0.5em;
+}
+
 body ul {
 	margin-bottom: 0.8em;
 	padding-left: 1.4em;

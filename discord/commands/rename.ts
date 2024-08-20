@@ -15,8 +15,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 	const imp = await import('@/soulstones/forge');
 	const forge = imp.default
 	const newName = interaction.options.getString('new_name', true);
-	const ss = await getInteractionStone(interaction, forge)
 	try {
+		const ss = await getInteractionStone(interaction, forge)
 		const nameBefore = ss.name
 		renameStone(ss, newName)
 		await replyWithStone(interaction, ss, {

@@ -5,6 +5,7 @@ import list from './list'
 import stone from "./stone";
 import rename from "./rename";
 import claim from "./claim";
+import destroy from "./destroy";
 
 const commands = [
 	info,
@@ -14,5 +15,6 @@ const commands = [
 	stone,
 	rename,
 	claim,
+	destroy,
 ]
 export default commands

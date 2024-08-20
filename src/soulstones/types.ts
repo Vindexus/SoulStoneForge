@@ -12,7 +12,7 @@ export type RarityCounts = Partial<Record<Rarity, number>>
 export type ModDef = {
 	id?: string
 	title: string
-	description: string
+	description?: string
 	rarity?: Rarity
 }
 

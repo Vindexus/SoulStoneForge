@@ -8,7 +8,6 @@ import SoulStone from "@/soulstones/stone.class";
 import {exit, getNumbersFromTextInput, promptOpts} from "./helpers";
 import {RarityCounts} from "@/soulstones/types";
 
-
 async function prompNumMods (cliArg: string | undefined) : Promise<number> {
 	const modsResponse = await prompts({
 		type: 'text',
@@ -136,7 +135,7 @@ async function promptSoulStoneName (stone: SoulStone) : Promise<string> {
 	const args = process.argv.slice(2)
 	const numMods = await prompNumMods(args[0])
 	const rarityCounts = await promptRarityRolls(numMods, args)
-	const stone = forge.newSoulStone(rarityCounts)
+	const stone = forge.newSoulStone(rarityCounts, args.join(' '))
 	if (stone.mods.length === 0) {
 		exit('Mod list is empty. This is bug. Exiting.')
 		return

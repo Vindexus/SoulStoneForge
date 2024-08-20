@@ -1,137 +1,1090 @@
-import commonDefs from '@/soulstones/mods/common/commons';
-import rareDefs from '@/soulstones/mods/rare/rares';
-import epicDefs from '@/soulstones/mods/epic/epics';
-import legendaryDefs from '@/soulstones/mods/legendary/legendaries';
 import {slugify} from "@/soulstones/helpers";
 import {Mod, ModDef, Rarity} from "@/soulstones/types";
-import path from "path";
-import fs from "fs";
-import {fileURLToPath} from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-let ids : string[] = []
-function defsToMods (defs: ModDef[], rarity: Rarity) : Mod[] {
-	return defs.map(def => {
-		const id = def.id || slugify(def.title)
-		if (ids.includes(id)) {
-			throw new Error(`Found duplicate mod id: ${id} (adding as ${rarity})`)
-		}
-		ids.push(id)
-		return {
-			id: id,
-			title: def.title,
-			description: def.description,
-			rarity,
-		}
-	})
-}
-
-
-const chatGPT = {
-	"common": [
-		{"title": "Speed Boost", "description": "Your movement speed increases by 5 feet."},
-		{"title": "Enhanced Vision", "description": "You gain darkvision out to a range of 60 feet."},
-		{"title": "Steady Aim", "description": "Your ranged attacks deal an additional 1 damage."},
-		{"title": "Lucky Strike", "description": "Once per day, you can reroll a failed attack roll."},
-		{"title": "Quick Reflexes", "description": "You gain a +1 bonus to Dexterity saving throws."},
-		{"title": "Enduring", "description": "You gain a +1 bonus to Constitution saving throws."},
-		{"title": "Water Breathing", "description": "You can breathe underwater for up to 1 hour."},
-		{"title": "Feather Fall", "description": "You fall at a rate of 60 feet per round and take no damage from falling."},
-		{"title": "Protection", "description": "You gain a +1 bonus to Armor Class."},
-		{"title": "Minor Healing", "description": "Once per day, you can heal yourself for 1d4 hit points."}
-	],
-	"rare": [
-		{"title": "Spell Reversal", "description": "Once per day, you can cast Counterspell."},
-		{"title": "Evasion", "description": "You gain advantage on Dexterity saving throws against effects that you can see."},
-		{"title": "Frost Resistance", "description": "You have resistance to cold damage."},
-		{"title": "Flame Tongue", "description": "Your weapon deals an extra 1d6 fire damage."},
-		{"title": "Winged Boots", "description": "You gain a flying speed equal to your walking speed for up to 1 hour per day."},
-		{"title": "Mind Shield", "description": "You are immune to being charmed or frightened."},
-		{"title": "Regeneration", "description": "You regain 1 hit point at the start of your turn if you have at least 1 hit point."},
-		{"title": "Spell Storing", "description": "Once per day, you can cast a 3rd-level spell without using a spell slot."},
-		{"title": "Telepathy", "description": "You can communicate telepathically with any creature within 60 feet."},
-		{"title": "Stone Skin", "description": "You gain resistance to non-magical bludgeoning, piercing, and slashing damage."}
-	],
-	"epic": [
-		{"title": "Time Stop", "description": "Once per day, you can cast Time Stop."},
-		{"title": "True Strike", "description": "Your attacks have a +2 bonus to hit and damage rolls."},
-		{"title": "Dimensional Door", "description": "Once per day, you can cast Dimension Door."},
-		{"title": "Dragon Scales", "description": "You gain resistance to a damage type of your choice (acid, cold, fire, lightning, or poison)."},
-		{"title": "Mana Shield", "description": "You can use your reaction to gain a +5 bonus to AC until the start of your next turn."},
-		{"title": "Elemental Burst", "description": "Your attacks deal an additional 2d6 elemental damage of your choice (acid, cold, fire, lightning, or thunder)."},
-		{"title": "Life Drain", "description": "Your attacks heal you for half the damage dealt."},
-		{"title": "Giant Strength", "description": "Your Strength score increases by 4, to a maximum of 24."},
-		{"title": "Ethereal Step", "description": "Once per day, you can cast Etherealness."},
-		{"title": "Battle Frenzy", "description": "You can make one additional attack when you take the Attack action on your turn."}
-	],
-	"legendary": [
-		{"title": "Wish", "description": "Once per month, you can cast Wish."},
-		{"title": "Invulnerability", "description": "Once per day, you can cast Invulnerability."},
-		{"title": "Divine Shield", "description": "You are immune to all damage for 1 minute. This ability recharges at dawn."},
-		{"title": "Phoenix Down", "description": "Once per week, you can return to life with full hit points if you die."},
-		{"title": "Elder Wand", "description": "Your spell save DC and spell attack bonus each increase by 3."},
-		{"title": "Planar Travel", "description": "Once per day, you can cast Plane Shift."},
-		{"title": "Soul Reaver", "description": "Your attacks deal an additional 4d6 necrotic damage and you heal for the same amount."},
-		{"title": "Eternal Youth", "description": "You stop aging and cannot be aged magically."},
-		{"title": "Godslayer", "description": "Your attacks bypass all resistances and immunities."},
-		{"title": "Reality Warp", "description": "Once per day, you can alter reality in a 1-mile radius."}
-	]
-}
-
-const textFileModDefs : Record<Rarity, ModDef[]> = {
-	common: [],
-	rare: [],
-	epic: [],
-	legendary: [],
-}
-
-for (const [rarity, defs] of Object.entries(textFileModDefs)) {
-	const dir = path.join(__dirname, rarity)
-	const files = fs.readdirSync(dir)
-	for (const file of files) {
-		if (file.endsWith('.ts')) continue
-		const filePath = path.join(dir, file)
-		const contents = fs.readFileSync(filePath, 'utf-8')
-		const id = file.replace('.txt', '')
-		const lines = contents.split('\n').filter(x => !!x)
-		const title = lines.shift()!
-		console.log(`Loaded ${title} from ${filePath}`)
-		defs.push({
-			title,
-			id,
-			description: lines.join('\n'),
-		})
+function defToMod (def: ModDef, rarity: Rarity) : Mod {
+	const id = def.id || slugify(def.title)
+	return {
+		id: id,
+		title: def.title,
+		description: def.description,
+		rarity,
 	}
 }
 
+const fromSheet : ModDef[] = [
+	{
+		title: "Chef",
+		rarity: "common"
+	},
+	{
+		title: "Ear for Deceit", // (Rogue)",
+		rarity: "common", id: "ear-for-deceit--rogue-", description: "You can hear lies!"
+	},
+	{
+		title: "Steady Eye", // (Rogue)",
+		rarity: "common"
+	},
+	{
+		title: "Actor",
+		rarity: "common"
+	},
+	{
+		title: "Athlete",
+		rarity: "common"
+	},
+	{
+		title: "Dungeon Delver",
+		rarity: "common"
+	},
+	{
+		title: "Healer",
+		rarity: "common"
+	},
+	{
+		title: "Heavily Armored",
+		rarity: "common"
+	},
+	{
+		title: "Lightly Armored",
+		rarity: "common"
+	},
+	{
+		title: "Moderately Armored",
+		rarity: "common"
+	},
+	{
+		title: "Inspiring Leader",
+		rarity: "common"
+	},
+	{
+		title: "Tactical Wit", // (Wizard)",
+		rarity: "common"
+	},
+	{
+		title: "Observant",
+		rarity: "common",
+		description: `Quick to notice details of your environment, you gain the following benefits:
+- Increase your Intelligence or Wisdom score by 1, to a maximum of 20.
+- If you can see a creature's mouth while it is speaking a language you understand, you can interpret what it's saying by reading its lips.
+- You have a +5 bonus to your passive Wisdom (Perception) and passive Intelligence (Investigation) scores.`
+	},
+	{
+		title: "Resilient of each type",
+		rarity: "common"
+	},
+	{
+		title: "Skilled", // (3 random skills)",
+		rarity: "common"
+	},
+	{
+		title: "Tavern Brawler",
+		rarity: "common"
+	},
+	{
+		title: "Speech of the Woods", // (Druid)",
+		rarity: "common"
+	},
+	{
+		title: "Giant’s Power", // (Barbarian)",
+		rarity: "common", description: "Become a Giant!"
+	},
+	{
+		title: "Spirit Seeker", // (Barbarian)",
+		rarity: "common"
+	},
+	{
+		title: "Magic Awareness", // (Barbarian)",
+		rarity: "common"
+	},
+	{
+		title: "Warrior of the Gods", // (Barbarian)",
+		rarity: "common"
+	},
+	{
+		title: "Silver Tongue", // (Bard)",
+		rarity: "common"
+	},
+	{
+		title: "Guiding Whispers", // (Bard)",
+		rarity: "common"
+	},
+	{
+		title: "Words of Terror", // (Bard)",
+		rarity: "common"
+	},
+	{
+		title: "Spell Breaker", // (Cleric)",
+		rarity: "common"
+	},
+	{
+		title: "Circle of Mortality", // (Cleric)",
+		rarity: "common"
+	},
+	{
+		title: "Eyes of the Grave", // (Cleric)",
+		rarity: "common"
+	},
+	{
+		title: "Disciple of Life", // (Cleric)",
+		rarity: "common"
+	},
+	{
+		title: "Blessed Healer", // (Cleric)",
+		rarity: "common"
+	},
+	{
+		title: "Thunderous Strike", // (Cleric)",
+		rarity: "common"
+	},
+	{
+		title: "Vigilant Blessing", // (Cleric)",
+		rarity: "common"
+	},
+	{
+		title: "Student of War", // (Fighter)",
+		rarity: "common"
+	},
+	{
+		title: "Know Your Enemy", // (Fighter)",
+		rarity: "common"
+	},
+	{
+		title: "Remarkable Athlete", // (Fighter)",
+		rarity: "common"
+	},
+	{
+		title: "Slow Fall", // (Monk)",
+		rarity: "common"
+	},
+	{
+		title: "Stillness of Mind", // (Monk)",
+		rarity: "common"
+	},
+	{
+		title: "Purity of Body", // (Monk)",
+		rarity: "common"
+	},
+	{
+		title: "Divine Sense", // (Paladin)",
+		rarity: "common"
+	},
+	{
+		title: "Undying Sentinel", // (Paladin)",
+		rarity: "common"
+	},
+	{
+		title: "Divine Health", // (Paladin)",
+		rarity: "common"
+	},
+	{
+		title: "Divine Allegiance", // (Paladin)",
+		rarity: "common"
+	},
+	{
+		title: "Unyielding Saint", // (Paladin)",
+		rarity: "common"
+	},
+	{
+		title: "Aura of the Sentinel", // (Paladin)",
+		rarity: "common"
+	},
+	{
+		title: "Natural Explorer", // (Ranger)",
+		rarity: "common"
+	},
+	{
+		title: "Land’s Stride", // (Ranger)",
+		rarity: "common"
+	},
+	{
+		title: "Hide in Plain Sight", // (Ranger)",
+		rarity: "common"
+	},
+	{
+		title: "Umbral Sight", // (Ranger)",
+		rarity: "common"
+	},
+	{
+		title: "Detect Portal", // (Ranger)",
+		rarity: "common"
+	},
+	{
+		title: "Second Story Work", // (Rogue)",
+		rarity: "common"
+	},
+	{
+		title: "Supreme Sneak", // (Rogue)",
+		rarity: "common"
+	},
+	{
+		title: "Gift of the Sea", // (Warlock)",
+		rarity: "common"
+	},
+	{
+		title: "Oceanic Soul", // (Warlock)",
+		description: "You have the soul of an Ocean!",
+		rarity: "common"
+	},
+	{
+		title: "Use Magic Device", // (Rogue)",
+		rarity: "common",
+		description: "You can use magic devices, like, super well.",
+	},
+	{
+		title: "Undying Nature", // (Warlock)",
+		rarity: "common"
+	},
+	{
+		title: "Imposter", // (Rogue)",
+		rarity: "common"
+	},
+	{
+		title: "Temporal Awareness", // (Wizard)",
+		rarity: "common"
+	},
+	{
+		title: "Storm Guide", // (Sorcerer)",
+		rarity: "common"
+	},
+	{
+		title: "Improved Minor Illusion", // (Wizard)",
+		rarity: "common"
+	},
+	{
+		title: "Wind Speaker", // (Sorcerer)",
+		rarity: "common"
+	},
+	{
+		title: "Wizardly Quill", // (Wizard)",
+		rarity: "common"
+	},
+	{
+		title: "Malleable Illusions", // (Wizard)",
+		rarity: "common"
+	},
+	{
+		title: "Minor Alchemy", // (Wizard)",
+		rarity: "common"
+	},
+	{
+		title: "Telepathic Speech", // (Sorcerer)",
+		rarity: "common"
+	},
+	{
+		title: "Martial weapon proficiency",
+		rarity: "common"
+	},
+	{
+		title: "Tempestuous Magic", // (Sorcerer)",
+		rarity: "rare"
+	},
+	{
+		title: "Arcane Deflection", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Psychic Defenses", // (Sorcerer)",
+		rarity: "rare"
+	},
+	{
+		title: "Fey Presence", // (Warlock)",
+		rarity: "rare",
+		description: ''
+	},
+	{
+		title: "Dread Ambusher", // (Ranger)",
+		rarity: "rare"
+	},
+	{
+		title: "Adjust Density", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Minor Conjuration", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Gravity Well", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Feral Senses", // (Ranger)",
+		rarity: "rare"
+	},
+	{
+		title: "Restore Balance", // (Sorcerer)",
+		rarity: "rare"
+	},
+	{
+		title: "Aura of Conquest", // (Paladin)",
+		rarity: "rare"
+	},
+	{
+		title: "Aura of Devotion", // (Paladin)",
+		rarity: "rare"
+	},
+	{
+		title: "Deflect Missile", // (Monk)",
+		rarity: "rare"
+	},
+	{
+		title: "Skulker",
+		rarity: "rare"
+	},
+	{
+		title: "Alert",
+		rarity: "rare"
+	},
+	{
+		title: "Momentary Stasis", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Unerring Eye", // (Rogue)",
+		rarity: "rare"
+	},
+	{
+		title: "Charger",
+		rarity: "rare"
+	},
+	{
+		title: "Defensive Duelist",
+		rarity: "rare"
+	},
+	{
+		title: "Durable",
+		rarity: "rare"
+	},
+	{
+		title: "Grappler",
+		rarity: "rare"
+	},
+	{
+		title: "Heavy Armor Master",
+		rarity: "rare"
+	},
+	{
+		title: "Medium Armor Master",
+		rarity: "rare"
+	},
+	{
+		title: "Martial Adept",
+		rarity: "rare"
+	},
+	{
+		title: "Metamagic Adept",
+		rarity: "rare"
+	},
+	{
+		title: "Indestructible Life", // (Warlock)",
+		rarity: "rare"
+	},
+	{
+		title: "Radiant Soul", // (Warlock)",
+		rarity: "rare"
+	},
+	{
+		title: "Celestial Resistance", // (Warlock)",
+		rarity: "rare"
+	},
+	{
+		title: "Mounted Combatant",
+		rarity: "rare"
+	},
+	{
+		title: "Poisoner",
+		rarity: "rare"
+	},
+	{
+		title: "Shield Master",
+		rarity: "rare"
+	},
+	{
+		title: "Arcane Ward", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Spell Sniper",
+		rarity: "rare"
+	},
+	{
+		title: "Telekinetic",
+		rarity: "rare"
+	},
+	{
+		title: "Master of Tactics", // (Rogue)",
+		rarity: "rare"
+	},
+	{
+		title: "Tipsy Sway", // (Monk)", // (ki is proficiency)",
+		rarity: "rare"
+	},
+	{
+		title: "Telepathic",
+		rarity: "rare"
+	},
+	{
+		title: "Nature’s Ward", // (Druid)",
+		rarity: "rare"
+	},
+	{
+		title: "Rage 1x per day", // (Barbarian)",
+		rarity: "rare"
+	},
+	{
+		title: "Danger Sense", // (Barbarian)",
+		rarity: "rare"
+	},
+	{
+		title: "Indomitable Might", // (Barbarian)",
+		rarity: "rare"
+	},
+	{
+		title: "Bardic Inspiration 1x per day", // (Bard)",
+		rarity: "rare"
+	},
+	{
+		title: "Song of Rest", // (Bard)",
+		rarity: "rare"
+	},
+	{
+		title: "Countercharm", // (Bard)",
+		rarity: "rare"
+	},
+	{
+		title: "Universal Speech", // (Bard)",
+		rarity: "rare"
+	},
+	{
+		title: "Turn Undead", // (Cleric) 1x / Destroy@5",
+		rarity: "rare"
+	},
+	{
+		title: "Favored by the Gods", // (Sorcerer)",
+		rarity: "rare"
+	},
+	{
+		title: "Empowered Healing", // (Sorcerer)",
+		rarity: "rare"
+	},
+	{
+		title: "Reaper", // (Cleric)",
+		rarity: "rare"
+	},
+	{
+		title: "Soul of the Forge", // (Cleric)",
+		rarity: "rare"
+	},
+	{
+		title: "Warding Flare", // (Cleric)",
+		rarity: "rare"
+	},
+	{
+		title: "Channel Divinity: Cloak of Shadows", // (Cleric)",
+		rarity: "rare"
+	},
+	{
+		title: "Eldritch Strike", // (Fighter)",
+		rarity: "rare"
+	},
+	{
+		title: "Unarmored Movement", // (Monk)",
+		rarity: "rare"
+	},
+	{
+		title: "Relentless Avenger", // (Paladin)",
+		rarity: "rare"
+	},
+	{
+		title: "Favored Enemy", // (Ranger)",
+		rarity: "rare"
+	},
+	{
+		title: "Hunter’s Sense", // (Ranger)",
+		rarity: "rare"
+	},
+	{
+		title: "Slayer’s Prey", // (Ranger)",
+		rarity: "rare"
+	},
+	{
+		title: "Awakened Mind", // (Warlock)",
+		rarity: "rare"
+	},
+	{
+		title: "The Third Eye", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Eyes of the Dark", // (Sorcerer)",
+		rarity: "rare"
+	},
+	{
+		title: "Fancy Footwork", // (Rogue)",
+		rarity: "rare"
+	},
+	{
+		title: "Ambush Master", // (Rogue)",
+		rarity: "rare"
+	},
+	{
+		title: "Moon Fire", // (Sorcerer)",
+		rarity: "rare"
+	},
+	{
+		title: "Steady Aim", // (Rogue)",
+		rarity: "rare"
+	},
+	{
+		title: "Sculpt Spells", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Thought Shield", // (Warlock)",
+		rarity: "rare"
+	},
+	{
+		title: "Inured to Undeath", // (Wizard)",
+		rarity: "rare"
+	},
+	{
+		title: "Sneak attack", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Draconic Resilience", // (Sorcerer)",
+		rarity: "epic"
+	},
+	{
+		title: "Entropic Ward", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Magical Ambush", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Grim Harvest", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Split Enchantment", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Alter Memories", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Panache", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Durable Summons", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Benign Transportation", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Master Duelist", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Potent Cantrip", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Durable Magic", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Shapechanger", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Violent Attraction", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Illusory Self", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Beguiling Defenses", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Dark Delirium", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Unearthly Recovery", // (Sorcerer)",
+		rarity: "epic"
+	},
+	{
+		title: "Vigilant Rebuke", // (Paladin)",
+		rarity: "epic"
+	},
+	{
+		title: "Dark One’s Blessing", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Fiendish Resilience", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Scornful Rebuke", // (Paladin)",
+		rarity: "epic"
+	},
+	{
+		title: "Trance of Order", // (Sorcerer)",
+		rarity: "epic"
+	},
+	{
+		title: "Tranquility", // (Monk)",
+		rarity: "epic"
+	},
+	{
+		title: "Hypnotic Gaze", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Skirmisher", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Heart of the Storm", // (Sorcerer)",
+		rarity: "epic"
+	},
+	{
+		title: "Arcane Abeyance", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Misty Escape", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Magic-User’s Nemesis", // (Ranger)",
+		rarity: "epic"
+	},
+	{
+		title: "Misdirection", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Monk Evasion",
+		rarity: "epic"
+	},
+	{
+		title: "Rogue Evasion",
+		rarity: "epic"
+	},
+	{
+		title: "Planar Warrior", // (Ranger)",
+		rarity: "epic"
+	},
+	{
+		title: "Ethereal Step", // (Ranger)",
+		rarity: "epic"
+	},
+	{
+		title: "Soul of Deceit", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Second Wind", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Crossbow Expert",
+		rarity: "epic"
+	},
+	{
+		title: "Crusher",
+		rarity: "epic"
+	},
+	{
+		title: "Piercer",
+		rarity: "epic"
+	},
+	{
+		title: "Aura of Hate", // (Paladin)",
+		rarity: "epic"
+	},
+	{
+		title: "Slasher",
+		rarity: "epic"
+	},
+	{
+		title: "Dual Wielder",
+		rarity: "epic"
+	},
+	{
+		title: "Uncanny Dodge", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Elemental Adept",
+		rarity: "epic"
+	},
+	{
+		title: "Fighting Initiate",
+		rarity: "epic"
+	},
+	{
+		title: "Mage Slayer",
+		rarity: "epic"
+	},
+	{
+		title: "Magic Initiate",
+		rarity: "epic"
+	},
+	{
+		title: "Mobile",
+		rarity: "epic"
+	},
+	{
+		title: "Polearm Master",
+		rarity: "epic"
+	},
+	{
+		title: "Distant Strike", // (Ranger)",
+		rarity: "epic"
+	},
+	{
+		title: "Savage Attacker",
+		rarity: "epic"
+	},
+	{
+		title: "Sentinel",
+		rarity: "epic"
+	},
+	{
+		title: "War Caster",
+		rarity: "epic"
+	},
+	{
+		title: "Touch of Death", // (Monk)",
+		rarity: "epic"
+	},
+	{
+		title: "Weapon Master",
+		rarity: "epic"
+	},
+	{
+		title: "Halo of Spores", // (Druid) - Fungal Infestation@6",
+		rarity: "epic"
+	},
+	{
+		title: "Barbarian Unarmored Defense",
+		rarity: "epic"
+	},
+	{
+		title: "Monk Unarmored Defense",
+		rarity: "epic"
+	},
+	{
+		title: "Reckless Attack", // (Barbarian)",
+		rarity: "epic"
+	},
+	{
+		title: "Movement Speed Increase",
+		rarity: "epic"
+	},
+	{
+		title: "Brutal Critical", // (Barbarian)",
+		rarity: "epic"
+	},
+	{
+		title: "Jack of All Trades", // (Bard)",
+		rarity: "epic"
+	},
+	{
+		title: "Enthralling Performance", // (Bard)",
+		rarity: "epic"
+	},
+	{
+		title: "Spirit Session", // (Bard)",
+		rarity: "epic"
+	},
+	{
+		title: "Blessed Strikes", // (Cleric)",
+		rarity: "epic"
+	},
+	{
+		title: "Sentinel at Death’s Door", // (Cleric)",
+		rarity: "epic"
+	},
+	{
+		title: "Dampen Elements", // (Cleric)",
+		rarity: "epic"
+	},
+	{
+		title: "Voice of Authority", // (Cleric)",
+		rarity: "epic"
+	},
+	{
+		title: "Wrath of the Storm", // (Cleric)",
+		rarity: "epic"
+	},
+	{
+		title: "Unwavering Mark", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Hold the Line", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Ferocious Charger", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Improved Critical", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Runic Shield", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Chronal Shift", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Fighting Spirit", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Rapid Strike", // (Fighter)",
+		rarity: "epic"
+	},
+	{
+		title: "Martial Arts", // (Monk)",
+		rarity: "epic"
+	},
+	{
+		title: "Opportunist", // (Monk)",
+		rarity: "epic"
+	},
+	{
+		title: "Aura of Warding", // (Paladin)",
+		rarity: "epic"
+	},
+	{
+		title: "Aura of Alacrity", // (Paladin)",
+		rarity: "epic"
+	},
+	{
+		title: "Purity of Spirit", // (Paladin)",
+		rarity: "epic"
+	},
+	{
+		title: "Protective Spirit", // (Paladin)",
+		rarity: "epic"
+	},
+	{
+		title: "Dreadful Strikes", // (Ranger)",
+		rarity: "epic"
+	},
+	{
+		title: "Shadowy Dodge", // (Ranger)",
+		rarity: "epic"
+	},
+	{
+		title: "Grave Touched", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Defy Death", // (Warlock)",
+		rarity: "epic"
+	},
+	{
+		title: "Cunning Action", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Command Undead", // (Wizard)",
+		rarity: "epic"
+	},
+	{
+		title: "Assassinate", // (Rogue)",
+		rarity: "epic"
+	},
+	{
+		title: "Action Surge", // (Fighter)",
+		rarity: "legendary"
+	},
+	{
+		title: "Divine Smite", // (Paladin)",
+		rarity: "legendary"
+	},
+	{
+		title: "Lay on Hands", // (Paladin)",
+		rarity: "legendary"
+	},
+	{
+		title: "Drake Companion", // (Ranger)",
+		rarity: "legendary"
+	},
+	{
+		title: "Shadow Step", // (Monk)",
+		rarity: "legendary"
+	},
+	{
+		title: "Shadow Walk", // (Sorcerer)",
+		rarity: "legendary"
+	},
+	{
+		title: "Dragon Wings", // (Sorcerer)",
+		rarity: "legendary"
+	},
+	{
+		title: "Convergent Future", // (Wizard)",
+		rarity: "legendary"
+	},
+	{
+		title: "Cloak of Shadows", // (Monk)",
+		rarity: "legendary"
+	},
+	{
+		title: "Primal Companion", // (Ranger)",
+		rarity: "legendary"
+	},
+	{
+		title: "Strength Before Death", // (Fighter)",
+		rarity: "legendary"
+	},
+	{
+		title: "Arcane Shot", // (Fighter)",
+		rarity: "legendary"
+	},
+	{
+		title: "Fey Touched",
+		rarity: "legendary"
+	},
+	{
+		title: "Shadow Touched",
+		rarity: "legendary"
+	},
+	{
+		title: "Great Weapon Master",
+		rarity: "legendary"
+	},
+	{
+		title: "Searing Vengeance", // (Warlock)",
+		rarity: "legendary"
+	},
+	{
+		title: "Keen Mind",
+		rarity: "legendary"
+	},
+	{
+		title: "Portent", // (Wizard)",
+		rarity: "legendary"
+	},
+	{
+		title: "Lucky",
+		rarity: "legendary"
+	},
+	{
+		title: "Sharpshooter",
+		rarity: "legendary"
+	},
+	{
+		title: "Tough",
+		rarity: "legendary"
+	},
+	{
+		title: "Wildshape 1x Per Day", // (Druid)",
+		rarity: "legendary"
+	},
+	{
+		title: "Starry Form 1x Per Day", // (Druid)",
+		rarity: "legendary"
+	},
+	{
+		title: "Summon Wildfire Spirit", // (Druid)",
+		rarity: "legendary"
+	},
+	{
+		title: "Extra Attack",
+		rarity: "legendary"
+	},
+	{
+		title: "Mantle of Majesty", // (Bard)",
+		rarity: "legendary"
+	},
+	{
+		title: "Mantle of Whispers", // (Bard)",
+		rarity: "legendary"
+	},
+	{
+		title: "Visions of the Past", // (Cleric)",
+		rarity: "legendary"
+	},
+	{
+		title: "War Magic", // (Fighter)",
+		rarity: "legendary"
+	},
+	{
+		title: "Giant Might", // (Fighter)",
+		rarity: "legendary"
+	},
+	{
+		title: "BG3 Fast Hands", // (BG3)",
+		rarity: "legendary"
+	},
+	{
+		title: "Thief’s Reflexes", // (Rogue)",
+		rarity: "legendary"
+	}
+];
+
+
 const rarityMods : Record<Rarity, Mod[]> = {
 	common: [
-		...defsToMods(chatGPT.common, 'common'),
-		...defsToMods(commonDefs, 'common'),
-		...defsToMods(textFileModDefs.common, 'common')
+		//...defsToMods(commonDefs, 'common'),
+		//...defsToMods(textFileModDefs.common, 'common')
 	],
 	rare: [
-		...defsToMods(chatGPT.rare, 'rare'),
-		...defsToMods(rareDefs, 'rare'),
-		...defsToMods(textFileModDefs.rare, 'rare')
+		//...defsToMods(rareDefs, 'rare'),
+		//...defsToMods(textFileModDefs.rare, 'rare')
 	],
 	epic: [
-		...defsToMods(chatGPT.epic, 'epic'),
-		...defsToMods(epicDefs, 'epic'),
-		...defsToMods(textFileModDefs.epic, 'epic')
+		//...defsToMods(epicDefs, 'epic'),
+		//...defsToMods(textFileModDefs.epic, 'epic')
 	],
 	legendary: [
-		...defsToMods(chatGPT.legendary, 'legendary'),
-		...defsToMods(legendaryDefs, 'legendary'),
-		...defsToMods(textFileModDefs.legendary, 'legendary')
+		//...defsToMods(legendaryDefs, 'legendary'),
+		//...defsToMods(textFileModDefs.legendary, 'legendary')
 	],
 }
 
+for (const def of fromSheet) {
+	const mod = defToMod(def, def.rarity!)
+	rarityMods[def.rarity!].push(mod)
+}
 
-export default [
+
+const mods : Mod[] = [
 	...rarityMods.common,
 	...rarityMods.rare,
 	...rarityMods.epic,
 	...rarityMods.legendary,
 ]
+
+// Check for any duplicate IDs
+const idsSet = new Set<string>()
+mods.forEach(mod => {
+	if (idsSet.has(mod.id)) {
+		throw new Error(`Duplicate mod id: ${mod.id}`)
+	}
+	idsSet.add(mod.id)
+})
+
+export default mods

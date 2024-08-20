@@ -5,6 +5,9 @@ import {AttachmentBuilder, ChatInputCommandInteraction, SlashCommandStringOption
 import fs from "fs";
 import {SoulStoneForge} from "@/soulstones/forge.class";
 
+// Certain commands require the user to have this role
+const ADMIN_ROLE = 'Stoneforger'
+
 export function addCommandOptionSearchStone (option: SlashCommandStringOption) {
 	return option.setName('stone')
 		.setDescription('ID or search for stone')
@@ -71,6 +74,24 @@ export async function getSSMessage (ss: SoulStone, opts: ReplyOpts) {
 		components: opts.components ? [opts.components] : [],
 	}
 	return content
+}
+
+export async function verifyAdminRole (interaction: ChatInputCommandInteraction) : Promise<boolean> {
+	const member = interaction.member
+	if (!member) {
+		throw new Error('No member')
+	}
+	console.log('roles', interaction.member!.roles)
+	console.log('roles cache', interaction.member!.roles.cache)
+	// @ts-ignore Whatever types I have installed don't think .cache is a thing
+	const isForger = interaction.member!.roles.cache.some(role => role.name === ADMIN_ROLE)
+
+	if (!isForger) {
+		await interaction.reply(`You must have the ${ADMIN_ROLE} role to do this`)
+		return false
+	}
+
+	return true
 }
 
 export async function getSSAttachment (ss: SoulStone) {

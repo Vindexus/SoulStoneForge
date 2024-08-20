@@ -1,5 +1,6 @@
 import {cyan, green, purple, yellow} from "next/dist/lib/picocolors";
 import {Mod, Rarity, RarityCounts} from "@/soulstones/types";
+import seedrandom from 'seedrandom'
 
 export function getRandomInt (min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1)) + min
@@ -7,6 +8,11 @@ export function getRandomInt (min: number, max: number): number {
 
 export function getRandomItem<T> (items: T[]): T {
 	return items[getRandomInt(0, items.length - 1)]!
+}
+
+export function getRandomItemSeeded<T> (items: T[], seed: string): T {
+	const rng = seedrandom(seed)
+	return items[Math.floor(rng() * items.length)]!
 }
 
 export function slugify (str: string) : string {
@@ -73,27 +79,41 @@ export function oxfordJoin (list: (string | number)[], ending: string = 'and') :
 	return str
 }
 
+export function getRandomStonePrefix () {
+	return getRandomItem(`Curious
+Enigmatic
+Arcane
+Cryptic
+Veiled
+Obscure
+Elusive
+Mystic
+Veiled`.split('\n'))
+}
+
 export function getRandomStoneNoun () {
 	return getRandomItem([
-		'Stone',
-		'Shard',
-		'Echo',
-		'Rune',
-		'Orb',
-		'Jewel',
 		'Bead',
-		'Focus',
-		'Spirit',
-		'Memory',
-		'Legacy',
-		'Whisper',
-		'Essence',
-		'Vessel',
 		'Charm',
 		'Crystal',
+		'Curio',
+		'Echo',
+		'Essence',
+		'Focus',
 		'Gem',
 		'Icon',
+		'Idol',
 		'Ingot',
+		'Jewel',
+		'Legacy',
+		'Memory',
+		'Orb',
+		'Rune',
+		'Shard',
+		'Spirit',
+		'Stone',
+		'Vessel',
+		'Whisper',
 	])
 }
 
